@@ -29,20 +29,21 @@ export default class Page extends Component {
     })
   }
   componentDidMount() {
-    let fireAppear = new Event('fireAppear');
+    let fireAppear = new CustomEvent('fireAppear');
     document.dispatchEvent(fireAppear);
   }
   render() {
     let { showSection } = this.state;
     return <div className="page">
       <div className="container">
-        <Section1 show={1 == showSection}/>
-        <Section2 show={2 == showSection}/>
-        
+        <Section1 show = {1 == showSection}/>
+        <Section2 show = {2 == showSection}/>
+        <Section3 show = {3 == showSection}/>
       </div>
       <p className="btn-wrap">
         <span onClick={() => this.changeShowSection(1)}>1</span>
         <span onClick={() => this.changeShowSection(2)}>2</span>
+        <span onClick={() => this.changeShowSection(3)}>3</span>
       </p>
     </div>
   }
@@ -52,8 +53,8 @@ export class Section1 extends Transition {
   sceneConfig() {
     return {
       name: 'section1',
-      isSame: true,
       inPlayTime: 300,
+      outPlayTime: 300,
       inQueue: [
         {
           el: this.left,
@@ -71,15 +72,31 @@ export class Section1 extends Transition {
           el: this.bottom,
           playType: 'bottom',
         }
+      ],
+      outQueue: [
+        {
+          el: this.right,
+          playType: 'fade',
+        },
+        {
+          el: this.top,
+          playType: 'translate',
+          translateName: 'top'
+        },
+        {
+          el: this.bottom,
+          playType: 'translate',
+          translateName: 'bottom'
+        }
       ]
     }
   }
   renderContent() {
     return <div className="wrap section1" ref={(el) => this.wrap = el}>
-      <p ref={(el) => this.left = el} >left1</p>
-      <p ref={(el) => this.top = el}>top1</p>
-      <p ref={(el) => this.right = el}>right1</p>
       <p ref={(el) => this.bottom = el}>bottom1</p>
+      <p ref={(el) => this.top = el}>top1</p>
+      <p ref={(el) => this.left = el} >left1</p>
+      <p ref={(el) => this.right = el}>right1</p>
     </div>
   }
 }
@@ -88,9 +105,18 @@ export class Section2 extends Transition {
   sceneConfig() {
     return {
       name: 'section2',
-      isSame: true,
       inPlayTime: 300,
       inQueue: [
+        {
+          el: this.top,
+          playType: 'translate',
+          translateName: 'top'
+        },
+        {
+          el: this.bottom,
+          playType: 'translate',
+          translateName: 'bottom'
+        },
         {
           el: this.left,
           playType: 'left',
@@ -98,14 +124,26 @@ export class Section2 extends Transition {
         {
           el: this.right,
           playType: 'right',
-        },
+        }
+      ],
+      outQueue: [
         {
           el: this.top,
-          playType: 'top',
+          playType: 'fade',
+          translateName: 'fade'
         },
         {
           el: this.bottom,
-          playType: 'bottom',
+          playType: 'fade',
+          translateName: 'fade'
+        },
+        {
+          el: this.left,
+          playType: 'fade',
+        },
+        {
+          el: this.right,
+          playType: 'fade',
         }
       ]
     }
@@ -124,34 +162,38 @@ export class Section3 extends Transition {
   sceneConfig() {
     return {
       name: 'section3',
-      isSame: true,
       inPlayTime: 300,
       inQueue: [
         {
-          el: this.left,
-          playType: 'left',
-        },
-        {
-          el: this.right,
-          playType: 'right',
-        },
-        {
           el: this.top,
-          playType: 'top',
+          playType: 'fade',
+          translateName: 'fade'
         },
         {
           el: this.bottom,
-          playType: 'bottom',
+          playType: 'fade',
+          translateName: 'fade'
+        },
+        {
+          el: this.left,
+          playType: 'fade',
+        },
+        {
+          el: this.right,
+          playType: 'fade',
         }
+      ],
+      outQueue: [
+
       ]
     }
   }
   renderContent() {
     return <div className="wrap section3" ref={(el) => this.wrap = el}>
-      <p ref={(el) => this.left = el}>left3</p>
-      <p ref={(el) => this.right = el}>right3</p>
-      <p ref={(el) => this.top = el}>top3</p>
-      <p ref={(el) => this.bottom = el}>bottom3</p>
+      <p ref={(el) => this.left = el} >left2</p>
+      <p ref={(el) => this.right = el}>right2</p>
+      <p ref={(el) => this.top = el}>top2</p>
+      <p ref={(el) => this.bottom = el}>bottom2</p>
     </div>
   }
 }

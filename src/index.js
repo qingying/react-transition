@@ -5,82 +5,91 @@ export default class Transition extends React.Component {
   constructor(props, context) {
     super(props);
     this.state = {
-      render: props.show,
-      appear: props.show,
-      disappear: false
+      render: props.show
     }
+    // this.appear = props.show;
+    this.disappear = !props.show;
+    this.statusChange = false;
+    this.play = false;
   }
   componentDidMount() {
-    this.doTransition();
+    if (this.state.render) {
+      this.doTransition();
+    }
     let self = this;
-    document.addEventListener('fireAppear', () => {
-      if (self.state.appear) {
-        sceneTransition.playScene(self.name, 'in');
+    document.addEventListener('fireAppear', (e) => {
+      if (!self.disappear) {
+        if (!self.name) {
+          self.play = true;
+          self.eventData = e;
+        } else {
+          sceneTransition.playScene(self.name, 'in', e.detail);
+        }
       }
     })
   }
   componentWillUpdate(nextProps) {
-    console.log('will update')
-    console.log(nextProps);
-    console.log(this.sceneConfig())
-    console.log('*******');
     let preShow = this.props.show;
     let nextShow = nextProps.show;
+
     if (preShow != nextShow) {
+      this.statusChange = true;
       if (nextShow) {
-        this.setState({
-          render: nextShow,
-          appear: true,
-          disappear: false
-        })
+        this.state.render = true;
+        this.disappear = false;
       } else {
-        this.setState({
-          disappear: true,
-          render: false,
-          appear: false
-        })
+        this.disappear = true;
       }
+    } else {
+      this.statusChange = false;
     }
   }
   componentDidUpdate() {
-    this.doTransition();
+    if (this.statusChange) {
+      this.doTransition();
+    }
   }
-  addScene(config) {
+  addScene() {
+    let config = this.sceneConfig();
     this.name = config.name;
+    config.playNextSceneCb = (data) => this.playNextSceneCb(data)
+    config.outPlayOverCb = (data) => this.transitionOver(data);
     sceneTransition.addScene(config);
   }
   doTransition() {
-    let { appear, disappear, render } = this.state;
-    console.log('did update')
-    console.log(this.state);
-    console.log(this.sceneConfig());
-    
-    if (render) {
-      console.log('add scene')
-      this.addScene(this.sceneConfig());
-    }
-    console.log('*******');
-    if (disappear) {
-      sceneTransition.playScene(self.name, 'out');
+    let { render } = this.state;
+    // debugger;
+    if (this.disappear) {
+      sceneTransition.playScene(this.name, 'out');
+    } else if (render) {
+      this.addScene();
+      if (this.play) {
+        this.play = false;
+        sceneTransition.playScene(this.name, 'in', this.eventData.detail);
+      }
     }
   }
+  playNextSceneCb(translateData) {
+    this.disappear = true;
+    let fireAppear = new CustomEvent('fireAppear',{detail: translateData});
+    document.dispatchEvent(fireAppear);
+  }
   transitionOver() {
-    if (this.state.disappear) {
-      this.setState({
-        render: false
-      })
-      let fireAppear = new Event('fireAppear');
-      document.dispatchEvent(fireAppear);
-
-    }
-    this.state.appear = false;
-    this.state.disappear = false;
+    this.setState({
+      render: false,
+      disappear: false
+    })
+  }
+  resetScene() {
+    sceneTransition.removeScence(this.name);
+    this.name = null;
   }
   render() {
     let { render } = this.state;
     if (render) {
       return this.renderContent();
     } else {
+      // this.resetScene();
       return null;
     }
     
